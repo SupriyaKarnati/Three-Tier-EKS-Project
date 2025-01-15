@@ -340,63 +340,56 @@ The **`values.yaml`** file defines the default configuration values for the **Ro
 
 This command is used to create a Kubernetes cluster named `demo-cluster-three-tier` using `eksctl` in the AWS region `eu-central-1`. The cluster will be configured for a three-tier architecture, suitable for deploying applications with distinct frontend, backend, and database components.
 
-## Command Overview
-
 ```bash
 eksctl create cluster --name demo-cluster-three-tier --region eu-central-1
+```
 
 2. Set the EKS Cluster Name
 
 Before proceeding with any configuration or operations on your EKS cluster, you need to specify the name of the cluster you are working with. This is done by exporting the `cluster_name` variable.
 
-## Command
-
 ```bash
 export cluster_name=<CLUSTER-NAME>
+```
 
 3. Retrieve OIDC Issuer URL for EKS Cluster
 
 This command retrieves the OIDC (OpenID Connect) issuer URL associated with your EKS cluster, which is necessary for configuring the IAM OIDC provider. The OIDC issuer URL allows Kubernetes service accounts to securely assume IAM roles and access AWS resources.
 
-## Command
 
 ```bash
 oidc_id=$(aws eks describe-cluster --name $cluster_name --query "cluster.identity.oidc.issuer" --output text | cut -d '/' -f 5)
+```
 
 4. Check Existing IAM OIDC Providers
 
 This command checks if an IAM OIDC provider already exists for the specified OIDC issuer ID. It is useful for verifying whether the OIDC provider has been configured previously before attempting to create a new one.
 
-## Command
-
 ```bash
 aws iam list-open-id-connect-providers | grep $oidc_id | cut -d "/" -f4
+```
 
 5. Download IAM Policy for AWS Load Balancer Controller
 
 This command downloads the IAM policy JSON file required for the AWS Load Balancer Controller installation. The policy grants the necessary permissions for the controller to interact with AWS services.
 
-## Command
-
 ```bash
 curl -O https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/v2.5.4/docs/install/iam_policy.json
+```
 
 6. Create IAM Policy for AWS Load Balancer Controller
 
 This command creates an IAM policy in AWS using the downloaded `iam_policy.json` file. The policy grants the necessary permissions for the AWS Load Balancer Controller to manage AWS resources like Elastic Load Balancers and security groups.
 
-## Command
-
 ```bash
 aws iam create-policy \
     --policy-name AWSLoadBalancerControllerIAMPolicy \
     --policy-document file://iam_policy.json
+```
 
 7. Create IAM Service Account for AWS Load Balancer Controller
 
 This command creates an IAM service account in your EKS cluster, allowing the AWS Load Balancer Controller to use the necessary IAM role for managing AWS resources such as Elastic Load Balancers and security groups.
-
-## Command
 
 ```bash
 eksctl create iamserviceaccount \
@@ -406,21 +399,19 @@ eksctl create iamserviceaccount \
   --role-name AmazonEKSLoadBalancerControllerRole \
   --attach-policy-arn=arn:aws:iam::<your-aws-account-id>:policy/AWSLoadBalancerControllerIAMPolicy \
   --approve
+```
 
 8. Add Helm Chart Repository for EKS
 
 This command adds the official Helm chart repository for Amazon EKS. The repository contains the Helm charts required to deploy and manage various AWS-related applications, including the AWS Load Balancer Controller, on EKS clusters.
 
-## Command
-
 ```bash
 helm repo add eks https://aws.github.io/eks-charts
+```
 
 9. Install AWS Load Balancer Controller Using Helm
 
 This command installs the AWS Load Balancer Controller in your EKS cluster using Helm. The controller manages AWS Elastic Load Balancers (ELBs) and security groups for Kubernetes services, enabling seamless integration between Kubernetes and AWS networking resources.
-
-## Command
 
 ```bash
 helm install aws-load-balancer-controller eks/aws-load-balancer-controller \
@@ -430,21 +421,19 @@ helm install aws-load-balancer-controller eks/aws-load-balancer-controller \
   --set serviceAccount.name=aws-load-balancer-controller \
   --set region=<region> \
   --set vpcId=<your-vpc-id>
+```
 
 10. Check AWS Load Balancer Controller Deployment Status
 
 This command checks the status of the AWS Load Balancer Controller deployment in the `kube-system` namespace of your EKS cluster. It is useful for verifying that the controller is running correctly and has the desired number of pods available.
 
-## Command
-
 ```bash
 kubectl get deployment -n kube-system aws-load-balancer-controller
+```
 
 11. Create IAM Service Account for EBS CSI Driver
 
 This command creates an IAM service account for the Amazon EBS CSI (Container Storage Interface) Driver in your EKS cluster. It associates the service account with the necessary IAM role and policy, allowing the EBS CSI driver to manage EBS volumes in your Kubernetes environment.
-
-## Command
 
 ```bash
 eksctl create iamserviceaccount \
@@ -455,43 +444,39 @@ eksctl create iamserviceaccount \
     --role-only \
     --attach-policy-arn arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy \
     --approve
+```
 
 12. Install Amazon EBS CSI Driver Addon in EKS
 
 This command installs the Amazon EBS CSI Driver as an addon in your EKS cluster. The driver enables dynamic provisioning and management of Amazon EBS volumes for your Kubernetes workloads.
 
-## Command
-
 ```bash
 eksctl create addon --name aws-ebs-csi-driver --cluster <YOUR-CLUSTER-NAME> --service-account-role-arn arn:aws:iam::<AWS-ACCOUNT-ID>:role/AmazonEKS_EBS_CSI_DriverRole --force
+```
 
 13. Install Robot Shop Application with Helm
 
 This command installs the Robot Shop application in your Kubernetes cluster using Helm. The application will be deployed in the `robot-shop` namespace.
 
-## Command
-
 ```bash
 helm install --name robot-shop --namespace robot-shop .
+```
 
 14. Install Robot Shop Application with Helm in a New Namespace
 
 This set of commands creates a new Kubernetes namespace called `robot-shop` and then installs the Robot Shop application into that namespace using Helm.
 
-## Commands
-
 ```bash
 kubectl create ns robot-shop
+```
 
 15. Install Robot Shop Application with Helm
 
 This command installs the Robot Shop application into the `robot-shop` namespace of your Kubernetes cluster using Helm.
 
-## Command
-
 ```bash
 helm install robot-shop --namespace robot-shop .
-
+```
 
 
 
