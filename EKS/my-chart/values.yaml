@@ -1,0 +1,12 @@
+image:
+  repo: robotshop     
+  version: latest
+  PullPolicy: IfNotPresent
+  
+payment:
+  gateway: null
+
+openshift: false
+
+redis:
+  storageClassName: gp2
